@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="0; url=https://lazhotel.web.app/payment-cancel">
     <title>LAZ Hotel - Payment Failed</title>
     <style>
         body {
@@ -116,41 +117,48 @@
         const WEB_URL = 'https://lazhotel.web.app';
 
         function redirectToApp(path, params = {}) {
-            const queryString = new URLSearchParams(params).toString();
-            const deepLink = `${APP_SCHEME}${path}${queryString ? '?' + queryString : ''}`;
-            const webUrl = `${WEB_URL}${path}${queryString ? '?' + queryString : ''}`;
+            // Redirect to the payment cancel screen
+            const webUrl = `${WEB_URL}/payment-cancel`;
             
-            console.log('Attempting deep link:', deepLink);
+            console.log('Redirecting to payment cancel screen:', webUrl);
+            console.log('Current URL:', window.location.href);
+            console.log('URL parameters:', new URLSearchParams(window.location.search));
             
-            // Try deep link first
-            window.location.href = deepLink;
+            // Navigate to the payment cancel screen
+            window.location.href = webUrl;
             
-            // Fallback to web URL after a delay
+            // Try to close this tab immediately after redirect
             setTimeout(() => {
-                console.log('Falling back to web URL:', webUrl);
-                window.location.href = webUrl;
-            }, 2000);
+                try {
+                    window.close();
+                } catch (error) {
+                    console.log('Could not close tab:', error);
+                }
+            }, 100);
         }
 
-        // Set up button actions
-        document.getElementById('retryBtn').onclick = function(e) {
-            e.preventDefault();
-            redirectToApp('/payment-failed', {
-                booking_id: bookingId,
-                amount: amount,
-                session_id: sessionId,
-                action: 'retry'
-            });
-        };
-
-        document.getElementById('supportBtn').onclick = function(e) {
-            e.preventDefault();
-            redirectToApp('/messages', {
-                booking_id: bookingId,
-                payment_failed: 'true',
-                error: error
-            });
-        };
+        // Immediately redirect without showing content
+        console.log('GitHub Pages failed page loaded');
+        console.log('Booking ID:', bookingId);
+        console.log('Amount:', amount);
+        console.log('Session ID:', sessionId);
+        console.log('Error:', error);
+        
+        // Redirect immediately to payment cancel screen
+        const webUrl = `${WEB_URL}/payment-cancel`;
+        console.log('Immediate redirect to:', webUrl);
+        
+        // Redirect immediately
+        window.location.href = webUrl;
+        
+        // Try to close tab after very short delay
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (error) {
+                console.log('Could not close tab:', error);
+            }
+        }, 50);
     </script>
 </body>
 </html>
