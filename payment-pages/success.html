@@ -146,33 +146,32 @@
         console.log('Amount:', amount);
         console.log('Session ID:', sessionId);
         
-        // Send payment success message to parent window (your app)
-        if (window.opener) {
-            console.log('Sending payment success message to parent window');
-            window.opener.postMessage({
-                type: 'PAYMENT_SUCCESS',
-                booking_id: bookingId,
-                amount: amount,
-                session_id: sessionId,
-                verified: true
-            }, '*');
+        // Try to communicate with parent window first
+        try {
+            if (window.opener && !window.opener.closed) {
+                console.log('Sending payment success message to parent window');
+                window.opener.postMessage({
+                    type: 'PAYMENT_SUCCESS',
+                    bookingId: bookingId,
+                    amount: amount,
+                    sessionId: sessionId,
+                    verified: true
+                }, '*');
+                
+                // Close this tab after sending message
+                setTimeout(() => {
+                    window.close();
+                }, 100);
+                return;
+            }
+        } catch (error) {
+            console.log('Could not communicate with parent window:', error);
         }
         
-        // Also try to send to the main window
-        if (window.parent && window.parent !== window) {
-            console.log('Sending payment success message to parent frame');
-            window.parent.postMessage({
-                type: 'PAYMENT_SUCCESS',
-                booking_id: bookingId,
-                amount: amount,
-                session_id: sessionId,
-                verified: true
-            }, '*');
-        }
-        
-        // Set localStorage as backup
+        // Fallback: Set payment success flag in localStorage
         localStorage.setItem('payment_success', 'true');
         localStorage.setItem('payment_verified', 'true');
+        localStorage.setItem('payment_completed', 'true');
         localStorage.setItem('payment_booking_id', bookingId || '');
         localStorage.setItem('payment_amount', amount || '');
         localStorage.setItem('payment_session_id', sessionId || '');
