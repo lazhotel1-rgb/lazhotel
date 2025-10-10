@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAZ Hotel - Payment Failed</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        .error-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            background: #f44336;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            color: white;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .btn {
+            background: #f44336;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s;
+            margin: 10px;
+        }
+        .btn:hover {
+            background: #d32f2f;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .error-details {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .error-details h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .error-details p {
+            margin: 5px 0;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-icon">✗</div>
+        <h1>Payment Failed</h1>
+        <p>There was an issue processing your payment. Please try again or contact our support team.</p>
+        
+        <div class="error-details">
+            <h3>What to do next:</h3>
+            <p>• Check your payment method details</p>
+            <p>• Ensure you have sufficient funds</p>
+            <p>• Try a different payment method</p>
+            <p>• Contact support if the issue persists</p>
+        </div>
+
+        <a href="#" id="retryBtn" class="btn">Try Payment Again</a>
+        <a href="#" id="supportBtn" class="btn btn-secondary">Contact Support</a>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingId = urlParams.get('booking_id');
+        const amount = urlParams.get('amount');
+        const sessionId = urlParams.get('session_id');
+        const error = urlParams.get('error');
+
+        // Deep link URLs
+        const APP_SCHEME = 'lazhotel://';
+        const WEB_URL = 'https://lazhotel-app.web.app';
+
+        function redirectToApp(path, params = {}) {
+            const queryString = new URLSearchParams(params).toString();
+            const deepLink = `${APP_SCHEME}${path}${queryString ? '?' + queryString : ''}`;
+            const webUrl = `${WEB_URL}${path}${queryString ? '?' + queryString : ''}`;
+            
+            console.log('Attempting deep link:', deepLink);
+            
+            // Try deep link first
+            window.location.href = deepLink;
+            
+            // Fallback to web URL after a delay
+            setTimeout(() => {
+                console.log('Falling back to web URL:', webUrl);
+                window.location.href = webUrl;
+            }, 2000);
+        }
+
+        // Set up button actions
+        document.getElementById('retryBtn').onclick = function(e) {
+            e.preventDefault();
+            redirectToApp('/payment-failed', {
+                booking_id: bookingId,
+                amount: amount,
+                session_id: sessionId,
+                action: 'retry'
+            });
+        };
+
+        document.getElementById('supportBtn').onclick = function(e) {
+            e.preventDefault();
+            redirectToApp('/messages', {
+                booking_id: bookingId,
+                payment_failed: 'true',
+                error: error
+            });
+        };
+    </script>
+</body>
+</html>
