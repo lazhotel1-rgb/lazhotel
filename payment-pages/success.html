@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="0; url=https://lazhotel.web.app?payment_success=true&verified=true">
     <title>LAZ Hotel - Payment Success</title>
     <style>
         body {
@@ -101,14 +102,8 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="success-icon">✓</div>
-        <h1>Payment Successful!</h1>
-        <p>Redirecting you back to the LAZ Hotel app...</p>
-        
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-        </div>
+    <div class="container" style="display: none;">
+        <!-- Hidden content - page will redirect immediately -->
     </div>
 
     <script>
@@ -134,14 +129,14 @@
             // Navigate to the main app with payment success parameter
             window.location.href = webUrl;
             
-            // Don't try to close immediately - let the redirect happen first
+            // Try to close this tab immediately after redirect
             setTimeout(() => {
                 try {
                     window.close();
                 } catch (error) {
                     console.log('Could not close tab:', error);
                 }
-            }, 1000);
+            }, 100);
         }
 
 
@@ -151,12 +146,21 @@
         console.log('Amount:', amount);
         console.log('Session ID:', sessionId);
         
-        redirectToApp('/payment-success', {
-            booking_id: bookingId,
-            amount: amount,
-            session_id: sessionId,
-            verified: 'true'
-        });
+        // Redirect immediately - no delay
+        const webUrl = `${WEB_URL}?payment_success=true&verified=true`;
+        console.log('Immediate redirect to:', webUrl);
+        
+        // Redirect immediately
+        window.location.href = webUrl;
+        
+        // Try to close tab after very short delay
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (error) {
+                console.log('Could not close tab:', error);
+            }
+        }, 50);
     </script>
 </body>
 </html>
