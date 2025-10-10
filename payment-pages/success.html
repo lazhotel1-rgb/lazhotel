@@ -82,24 +82,33 @@
             margin: 5px 0;
             color: #666;
         }
+        .loading-spinner {
+            margin: 20px 0;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="success-icon">✓</div>
         <h1>Payment Successful!</h1>
-        <p>Your payment has been processed successfully! You will be redirected back to the LAZ Hotel app in 2 seconds to complete your booking.</p>
+        <p>Redirecting you back to the LAZ Hotel app...</p>
         
-        <div class="payment-details">
-            <h3>Payment Details</h3>
-            <p><strong>Amount:</strong> <span id="amount">Loading...</span></p>
-            <p><strong>Booking ID:</strong> <span id="bookingId">Loading...</span></p>
-            <p><strong>Transaction ID:</strong> <span id="sessionId">Loading...</span></p>
-            <p><strong>Status:</strong> <span style="color: #4CAF50;">Completed</span></p>
+        <div class="loading-spinner">
+            <div class="spinner"></div>
         </div>
-
-        <a href="#" id="returnBtn" class="btn">Return to LAZ Hotel App</a>
-        <a href="#" id="messageBtn" class="btn btn-secondary">Go to Messages</a>
     </div>
 
     <script>
@@ -109,10 +118,6 @@
         const amount = urlParams.get('amount');
         const sessionId = urlParams.get('session_id');
 
-        // Update payment details
-        if (amount) document.getElementById('amount').textContent = `₱${parseFloat(amount).toLocaleString()}`;
-        if (bookingId) document.getElementById('bookingId').textContent = bookingId;
-        if (sessionId) document.getElementById('sessionId').textContent = sessionId;
 
         // Deep link URLs
         const APP_SCHEME = 'lazhotel://';
@@ -127,44 +132,30 @@
             // Navigate to the main app with payment success parameter
             window.location.href = webUrl;
             
-            // Try to close this tab after navigation
-            setTimeout(() => {
-                try {
-                    window.close();
-                } catch (error) {
-                    console.log('Could not close tab:', error);
-                }
-            }, 500);
+            // Try to close this tab immediately
+            try {
+                window.close();
+            } catch (error) {
+                console.log('Could not close tab:', error);
+                // Fallback: try to close after a very short delay
+                setTimeout(() => {
+                    try {
+                        window.close();
+                    } catch (e) {
+                        console.log('Fallback close failed:', e);
+                    }
+                }, 100);
+            }
         }
 
-        // Set up button actions
-        document.getElementById('returnBtn').onclick = function(e) {
-            e.preventDefault();
-            redirectToApp('/payment-success', {
-                booking_id: bookingId,
-                amount: amount,
-                session_id: sessionId,
-                verified: 'true'
-            });
-        };
 
-        document.getElementById('messageBtn').onclick = function(e) {
-            e.preventDefault();
-            redirectToApp('/messages', {
-                booking_id: bookingId,
-                payment_success: 'true'
-            });
-        };
-
-        // Auto-redirect after 2 seconds (faster)
-        setTimeout(() => {
-            redirectToApp('/payment-success', {
-                booking_id: bookingId,
-                amount: amount,
-                session_id: sessionId,
-                verified: 'true'
-            });
-        }, 2000);
+        // Immediately redirect without showing content
+        redirectToApp('/payment-success', {
+            booking_id: bookingId,
+            amount: amount,
+            session_id: sessionId,
+            verified: 'true'
+        });
     </script>
 </body>
 </html>
