@@ -107,7 +107,7 @@
     </div>
 
     <script>
-        // Get URL parameters from PayMongo redirect
+        // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const bookingId = urlParams.get('booking_id');
         const guestName = urlParams.get('guest_name');
@@ -116,8 +116,12 @@
         const numberOfPeople = urlParams.get('number_of_people');
         const extraPersonFee = urlParams.get('extra_person_fee');
         const extraBedFee = urlParams.get('extra_bed_fee');
-        const amount = urlParams.get('amount') || '3000'; // Default amount
-        const sessionId = urlParams.get('session_id') || 'test_session';
+        const amount = urlParams.get('amount');
+        const roomType = urlParams.get('room_type');
+        const roomNumber = urlParams.get('room_number');
+        const guestEmail = urlParams.get('guest_email');
+        const guestPhone = urlParams.get('guest_phone');
+        const sessionId = urlParams.get('session_id');
 
 
         // Deep link URLs
@@ -151,28 +155,29 @@
         console.log('Booking ID:', bookingId);
         console.log('Amount:', amount);
         console.log('Session ID:', sessionId);
+        console.log('Guest Name:', guestName);
+        console.log('Room Type:', roomType);
         
-        // Set payment success flag in localStorage
-        localStorage.setItem('payment_success', 'true');
-        localStorage.setItem('payment_verified', 'true');
-        localStorage.setItem('payment_booking_id', bookingId || '');
-        localStorage.setItem('payment_amount', amount || '');
-        localStorage.setItem('payment_session_id', sessionId || '');
-        localStorage.setItem('payment_guest_name', guestName || '');
-        localStorage.setItem('payment_check_in', checkIn || '');
-        localStorage.setItem('payment_check_out', checkOut || '');
-        localStorage.setItem('payment_number_of_people', numberOfPeople || '');
-        localStorage.setItem('payment_extra_person_fee', extraPersonFee || '');
-        localStorage.setItem('payment_extra_bed_fee', extraBedFee || '');
-        
-        console.log('Payment success data saved to localStorage');
-        console.log('Booking data:', {
-            bookingId, guestName, checkIn, checkOut, 
-            numberOfPeople, extraPersonFee, extraBedFee, amount, sessionId
+        // Build redirect URL with all booking data
+        const params = new URLSearchParams({
+            'payment_success': 'true',
+            'verified': 'true',
+            'booking_id': bookingId || '',
+            'guest_name': guestName || '',
+            'check_in': checkIn || '',
+            'check_out': checkOut || '',
+            'number_of_people': numberOfPeople || '',
+            'extra_person_fee': extraPersonFee || '',
+            'extra_bed_fee': extraBedFee || '',
+            'amount': amount || '',
+            'room_type': roomType || '',
+            'room_number': roomNumber || '',
+            'guest_email': guestEmail || '',
+            'guest_phone': guestPhone || '',
+            'session_id': sessionId || ''
         });
         
-        // Redirect immediately with all booking data
-        const webUrl = `${WEB_URL}?payment_success=true&verified=true&booking_id=${bookingId || ''}&guest_name=${encodeURIComponent(guestName || '')}&check_in=${checkIn || ''}&check_out=${checkOut || ''}&number_of_people=${numberOfPeople || ''}&amount=${amount || ''}&session_id=${sessionId || ''}`;
+        const webUrl = `${WEB_URL}?${params.toString()}`;
         console.log('Immediate redirect to:', webUrl);
         
         // Redirect immediately
