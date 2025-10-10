@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="0; url=https://lazhotel.web.app?payment_success=true&verified=true">
+    <meta http-equiv="refresh" content="0; url=https://lazhotel.web.app/payment-success">
     <title>LAZ Hotel - Payment Success</title>
     <style>
         body {
@@ -160,8 +160,6 @@
         
         // Build redirect URL with all booking data
         const params = new URLSearchParams({
-            'payment_success': 'true',
-            'verified': 'true',
             'booking_id': bookingId || '',
             'guest_name': guestName || '',
             'check_in': checkIn || '',
@@ -177,7 +175,7 @@
             'session_id': sessionId || ''
         });
         
-        const webUrl = `${WEB_URL}?${params.toString()}`;
+        const webUrl = `${WEB_URL}/payment-success?${params.toString()}`;
         console.log('Immediate redirect to:', webUrl);
         
         // Redirect immediately
