@@ -88,7 +88,7 @@
     <div class="container">
         <div class="success-icon">✓</div>
         <h1>Payment Successful!</h1>
-        <p>Your payment has been processed successfully! You will be redirected back to the LAZ Hotel app in 3 seconds to complete your booking.</p>
+        <p>Your payment has been processed successfully! You will be redirected back to the LAZ Hotel app in 2 seconds to complete your booking.</p>
         
         <div class="payment-details">
             <h3>Payment Details</h3>
@@ -120,19 +120,22 @@
 
         function redirectToApp(path, params = {}) {
             const queryString = new URLSearchParams(params).toString();
-            const deepLink = `${APP_SCHEME}${path}${queryString ? '?' + queryString : ''}`;
             const webUrl = `${WEB_URL}${path}${queryString ? '?' + queryString : ''}`;
             
-            console.log('Attempting deep link:', deepLink);
+            console.log('Redirecting to web app:', webUrl);
             
-            // Try deep link first
-            window.location.href = deepLink;
+            // For web apps, we need to navigate to the web app and close this tab
+            // Open the web app in the same tab
+            window.location.href = webUrl;
             
-            // Fallback to web URL after a delay
+            // Try to close this tab after navigation
             setTimeout(() => {
-                console.log('Falling back to web URL:', webUrl);
-                window.location.href = webUrl;
-            }, 2000);
+                try {
+                    window.close();
+                } catch (error) {
+                    console.log('Could not close tab:', error);
+                }
+            }, 500);
         }
 
         // Set up button actions
@@ -154,7 +157,7 @@
             });
         };
 
-        // Auto-redirect after 3 seconds
+        // Auto-redirect after 2 seconds (faster)
         setTimeout(() => {
             redirectToApp('/payment-success', {
                 booking_id: bookingId,
@@ -162,7 +165,7 @@
                 session_id: sessionId,
                 verified: 'true'
             });
-        }, 3000);
+        }, 2000);
     </script>
 </body>
 </html>
