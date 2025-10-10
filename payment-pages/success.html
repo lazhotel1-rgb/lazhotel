@@ -128,28 +128,29 @@
             const webUrl = `${WEB_URL}?payment_success=true&verified=true`;
             
             console.log('Redirecting to main app:', webUrl);
+            console.log('Current URL:', window.location.href);
+            console.log('URL parameters:', new URLSearchParams(window.location.search));
             
             // Navigate to the main app with payment success parameter
             window.location.href = webUrl;
             
-            // Try to close this tab immediately
-            try {
-                window.close();
-            } catch (error) {
-                console.log('Could not close tab:', error);
-                // Fallback: try to close after a very short delay
-                setTimeout(() => {
-                    try {
-                        window.close();
-                    } catch (e) {
-                        console.log('Fallback close failed:', e);
-                    }
-                }, 100);
-            }
+            // Don't try to close immediately - let the redirect happen first
+            setTimeout(() => {
+                try {
+                    window.close();
+                } catch (error) {
+                    console.log('Could not close tab:', error);
+                }
+            }, 1000);
         }
 
 
         // Immediately redirect without showing content
+        console.log('GitHub Pages success page loaded');
+        console.log('Booking ID:', bookingId);
+        console.log('Amount:', amount);
+        console.log('Session ID:', sessionId);
+        
         redirectToApp('/payment-success', {
             booking_id: bookingId,
             amount: amount,
