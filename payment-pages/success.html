@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="0; url=https://lazhotel.web.app/payment-success">
+    <!-- Meta refresh removed - using JavaScript redirect with parameters instead -->
     <title>LAZ Hotel - Payment Success</title>
     <style>
         body {
@@ -178,6 +178,8 @@
         
         const webUrl = `${WEB_URL}/payment-success?${params.toString()}`;
         console.log('Immediate redirect to:', webUrl);
+        console.log('Current URL before redirect:', window.location.href);
+        console.log('URL parameters:', params);
         
         // Redirect immediately
         window.location.href = webUrl;
