@@ -119,13 +119,12 @@
         const WEB_URL = 'https://lazhotel.web.app';
 
         function redirectToApp(path, params = {}) {
-            const queryString = new URLSearchParams(params).toString();
-            const webUrl = `${WEB_URL}${path}${queryString ? '?' + queryString : ''}`;
+            // Since your app doesn't use routes, redirect to the main app URL with payment success parameter
+            const webUrl = `${WEB_URL}?payment_success=true&verified=true`;
             
-            console.log('Redirecting to web app:', webUrl);
+            console.log('Redirecting to main app:', webUrl);
             
-            // For web apps, we need to navigate to the web app and close this tab
-            // Open the web app in the same tab
+            // Navigate to the main app with payment success parameter
             window.location.href = webUrl;
             
             // Try to close this tab after navigation
