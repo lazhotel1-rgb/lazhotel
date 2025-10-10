@@ -146,6 +146,15 @@
         console.log('Amount:', amount);
         console.log('Session ID:', sessionId);
         
+        // Set payment success flag in localStorage
+        localStorage.setItem('payment_success', 'true');
+        localStorage.setItem('payment_verified', 'true');
+        localStorage.setItem('payment_booking_id', bookingId || '');
+        localStorage.setItem('payment_amount', amount || '');
+        localStorage.setItem('payment_session_id', sessionId || '');
+        
+        console.log('Payment success data saved to localStorage');
+        
         // Redirect immediately - no delay
         const webUrl = `${WEB_URL}?payment_success=true&verified=true`;
         console.log('Immediate redirect to:', webUrl);
