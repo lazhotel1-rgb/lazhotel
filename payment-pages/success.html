@@ -109,12 +109,7 @@
         // Get URL parameters from PayMongo redirect
         const urlParams = new URLSearchParams(window.location.search);
         
-        // PayMongo specific parameters
-        const checkoutSessionId = urlParams.get('checkout_session_id');
-        const paymentIntentId = urlParams.get('payment_intent_id');
-        const paymentStatus = urlParams.get('payment_status');
-        
-        // Booking data parameters (passed from PayMongo metadata)
+        // Extract booking data from URL parameters
         const bookingId = urlParams.get('booking_id');
         const guestName = urlParams.get('guest_name');
         const checkIn = urlParams.get('check_in');
@@ -128,114 +123,93 @@
         const guestEmail = urlParams.get('guest_email');
         const guestPhone = urlParams.get('guest_phone');
         const sessionId = urlParams.get('session_id');
+        
+        // PayMongo specific parameters
+        const paymongoPaymentId = urlParams.get('payment_id');
+        const paymongoStatus = urlParams.get('status');
+        const paymongoCheckoutSessionId = urlParams.get('checkout_session_id');
 
         // App URLs
         const WEB_URL = 'https://lazhotel.web.app';
 
-        // Validate payment success
-        function validatePaymentSuccess() {
-            console.log('Validating payment success...');
-            console.log('Checkout Session ID:', checkoutSessionId);
-            console.log('Payment Status:', paymentStatus);
-            console.log('Payment Intent ID:', paymentIntentId);
+        // Log all received data for debugging
+        console.log('=== PayMongo Success Page Loaded ===');
+        console.log('Current URL:', window.location.href);
+        console.log('All URL parameters:', Object.fromEntries(urlParams));
+        console.log('Booking ID:', bookingId);
+        console.log('Amount:', amount);
+        console.log('Session ID:', sessionId);
+        console.log('PayMongo Payment ID:', paymongoPaymentId);
+        console.log('PayMongo Status:', paymongoStatus);
+        console.log('Guest Name:', guestName);
+        console.log('Room Type:', roomType);
+        
+        // Build comprehensive redirect URL with all data
+        const redirectParams = new URLSearchParams({
+            // Payment verification flag
+            'verified': 'true',
+            'from_success_page': 'true',
             
-            // Check if we have the required PayMongo parameters
-            if (!checkoutSessionId) {
-                console.error('No checkout session ID found');
-                return false;
-            }
+            // Booking data
+            'booking_id': bookingId || '',
+            'guest_name': guestName || '',
+            'check_in': checkIn || '',
+            'check_out': checkOut || '',
+            'number_of_people': numberOfPeople || '',
+            'extra_person_fee': extraPersonFee || '',
+            'extra_bed_fee': extraBedFee || '',
+            'amount': amount || '',
+            'room_type': roomType || '',
+            'room_number': roomNumber || '',
+            'guest_email': guestEmail || '',
+            'guest_phone': guestPhone || '',
+            'session_id': sessionId || '',
             
-            // If payment_status is provided, check if it's successful
-            if (paymentStatus && paymentStatus !== 'succeeded') {
-                console.error('Payment status is not successful:', paymentStatus);
-                return false;
-            }
+            // PayMongo specific data
+            'paymongo_payment_id': paymongoPaymentId || '',
+            'paymongo_status': paymongoStatus || '',
+            'paymongo_checkout_session_id': paymongoCheckoutSessionId || '',
             
-            // Check if we have booking data
-            if (!bookingId || !amount) {
-                console.error('Missing required booking data');
-                return false;
-            }
-            
-            console.log('Payment validation successful');
-            return true;
-        }
-
-        // Redirect back to app with payment data
-        function redirectToApp() {
-            if (!validatePaymentSuccess()) {
-                console.error('Payment validation failed, redirecting to failed page');
-                window.location.href = `${WEB_URL}/payment-failed`;
-                return;
-            }
-            
-            // Build redirect URL with all payment and booking data
-            const params = new URLSearchParams({
-                'verified': 'true',
-                'payment_success': 'true',
-                'checkout_session_id': checkoutSessionId || '',
-                'payment_intent_id': paymentIntentId || '',
-                'payment_status': paymentStatus || 'succeeded',
-                'booking_id': bookingId || '',
-                'guest_name': guestName || '',
-                'check_in': checkIn || '',
-                'check_out': checkOut || '',
-                'number_of_people': numberOfPeople || '',
-                'extra_person_fee': extraPersonFee || '',
-                'extra_bed_fee': extraBedFee || '',
-                'amount': amount || '',
-                'room_type': roomType || '',
-                'room_number': roomNumber || '',
-                'guest_email': guestEmail || '',
-                'guest_phone': guestPhone || '',
-                'session_id': sessionId || ''
-            });
-            
-            const webUrl = `${WEB_URL}/payment-success?${params.toString()}`;
-            console.log('Redirecting to app:', webUrl);
-            
-            // Redirect to the app
-            window.location.href = webUrl;
+            // Timestamp for tracking
+            'payment_completed_at': new Date().toISOString()
+        });
+        
+        const redirectUrl = `${WEB_URL}/payment-success?${redirectParams.toString()}`;
+        console.log('Redirecting to app:', redirectUrl);
+        
+        // Show brief success message before redirect
+        document.body.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);">
+                <div style="background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 90%;">
+                    <div style="width: 100px; height: 100px; margin: 0 auto 20px; background: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 50px; color: white;">✓</div>
+                    <h1 style="color: #333; margin-bottom: 10px;">Payment Successful!</h1>
+                    <p style="color: #666; line-height: 1.6; margin-bottom: 30px;">Redirecting you back to the app...</p>
+                    <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #4CAF50; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                </div>
+            </div>
+            <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
+        `;
+        
+        // Redirect to app after brief delay to show success message
+        setTimeout(() => {
+            console.log('Executing redirect to app...');
+            window.location.href = redirectUrl;
             
             // Try to close this tab after redirect
             setTimeout(() => {
                 try {
+                    console.log('Attempting to close tab...');
                     window.close();
                 } catch (error) {
-                    console.log('Could not close tab:', error);
-                    // If we can't close the tab, show a message
-                    document.body.innerHTML = `
-                        <div class="container">
-                            <div class="success-icon">✓</div>
-                            <h1>Payment Successful!</h1>
-                            <p>Your payment has been processed successfully. You can now close this tab and return to the app.</p>
-                            <button class="btn" onclick="window.close()">Close Tab</button>
-                        </div>
-                    `;
+                    console.log('Could not close tab (this is normal in some browsers):', error);
                 }
             }, 1000);
-        }
-
-        // Execute the flow immediately
-        console.log('PayMongo Success Page Loaded');
-        console.log('URL:', window.location.href);
-        console.log('All URL Parameters:', Object.fromEntries(urlParams.entries()));
-        
-        // Show loading state briefly
-        document.body.innerHTML = `
-            <div class="container">
-                <div class="loading-spinner">
-                    <div class="spinner"></div>
-                </div>
-                <h1>Processing Payment...</h1>
-                <p>Please wait while we verify your payment.</p>
-            </div>
-        `;
-        
-        // Process payment after a short delay
-        setTimeout(() => {
-            redirectToApp();
-        }, 1500);
+        }, 2000);
     </script>
 </body>
 </html>
