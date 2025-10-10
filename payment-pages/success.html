@@ -129,14 +129,14 @@
         const WEB_URL = 'https://lazhotel.web.app';
 
         function redirectToApp(path, params = {}) {
-            // Since your app doesn't use routes, redirect to the main app URL with payment success parameter
-            const webUrl = `${WEB_URL}?payment_success=true&verified=true`;
+            // Redirect to the payment success screen with all booking data
+            const webUrl = `${WEB_URL}/payment-success`;
             
-            console.log('Redirecting to main app:', webUrl);
+            console.log('Redirecting to payment success screen:', webUrl);
             console.log('Current URL:', window.location.href);
             console.log('URL parameters:', new URLSearchParams(window.location.search));
             
-            // Navigate to the main app with payment success parameter
+            // Navigate to the payment success screen
             window.location.href = webUrl;
             
             // Try to close this tab immediately after redirect
@@ -160,6 +160,7 @@
         
         // Build redirect URL with all booking data
         const params = new URLSearchParams({
+            'verified': 'true',
             'booking_id': bookingId || '',
             'guest_name': guestName || '',
             'check_in': checkIn || '',
