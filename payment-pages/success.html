@@ -88,7 +88,7 @@
     <div class="container">
         <div class="success-icon">✓</div>
         <h1>Payment Successful!</h1>
-        <p>Your payment has been processed successfully. Your booking is now confirmed!</p>
+        <p>Your payment has been processed successfully! You will be redirected back to the LAZ Hotel app in 3 seconds to complete your booking.</p>
         
         <div class="payment-details">
             <h3>Payment Details</h3>
@@ -116,7 +116,7 @@
 
         // Deep link URLs
         const APP_SCHEME = 'lazhotel://';
-        const WEB_URL = 'https://lazhotel-app.web.app';
+        const WEB_URL = 'https://lazhotel.web.app';
 
         function redirectToApp(path, params = {}) {
             const queryString = new URLSearchParams(params).toString();
@@ -154,7 +154,7 @@
             });
         };
 
-        // Auto-redirect after 5 seconds
+        // Auto-redirect after 3 seconds
         setTimeout(() => {
             redirectToApp('/payment-success', {
                 booking_id: bookingId,
@@ -162,7 +162,7 @@
                 session_id: sessionId,
                 verified: 'true'
             });
-        }, 5000);
+        }, 3000);
     </script>
 </body>
 </html>
