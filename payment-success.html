@@ -223,11 +223,13 @@
     </div>
 
     <script>
-        // Get URL parameters
+        // Get URL parameters from PayMongo redirect
         const urlParams = new URLSearchParams(window.location.search);
-        const transactionId = urlParams.get('transaction_id') || 'TXN' + Date.now();
-        const amount = urlParams.get('amount') || '0.00';
-        const bookingId = urlParams.get('booking_id') || 'BK' + Date.now();
+        const transactionId = urlParams.get('transaction_id') || urlParams.get('id') || 'TXN' + Date.now();
+        const amount = urlParams.get('amount') || urlParams.get('total_amount') || '0.00';
+        const bookingId = urlParams.get('booking_id') || urlParams.get('metadata_booking_id') || 'BK' + Date.now();
+        const paymentIntentId = urlParams.get('payment_intent_id') || urlParams.get('payment_intent') || 'PI' + Date.now();
+        const status = urlParams.get('status') || 'succeeded';
         
         // Update page content
         document.getElementById('transactionId').textContent = transactionId;
@@ -275,16 +277,38 @@
                 type: 'payment_success',
                 transactionId: transactionId,
                 amount: amount,
-                bookingId: bookingId
+                bookingId: bookingId,
+                paymentIntentId: paymentIntentId,
+                status: status
             }, '*');
         }
         
-        // Store success status in localStorage for the app to check
+        // Store payment intent data in localStorage for the app to check
+        const paymentIntentData = {
+            status: 'success',
+            transactionId: transactionId,
+            amount: amount,
+            bookingId: bookingId,
+            paymentIntentId: paymentIntentId,
+            timestamp: new Date().toISOString(),
+            source: 'paymongo'
+        };
+        
+        localStorage.setItem('payment_intent_data', JSON.stringify(paymentIntentData));
         localStorage.setItem('payment_status', 'success');
         localStorage.setItem('payment_transaction_id', transactionId);
         localStorage.setItem('payment_amount', amount);
         localStorage.setItem('payment_booking_id', bookingId);
+        localStorage.setItem('payment_intent_id', paymentIntentId);
         localStorage.setItem('payment_timestamp', new Date().toISOString());
+        
+        // Also try to communicate with the app via URL scheme if available
+        try {
+            // This would work if the app registers a custom URL scheme
+            window.location.href = `lazhotel://payment-success?status=success&transactionId=${transactionId}&amount=${amount}&bookingId=${bookingId}&paymentIntentId=${paymentIntentId}`;
+        } catch (e) {
+            console.log('URL scheme not available, using localStorage');
+        }
     </script>
 </body>
 </html>
