@@ -275,6 +275,51 @@
             source: 'paymongo_redirect'
         };
         
+        // Fetch real payment status from PayMongo API
+        async function fetchRealPaymentStatus() {
+            try {
+                console.log('Fetching real payment status from PayMongo API...');
+                
+                // Use PayMongo's public API to check payment intent status
+                const response = await fetch(`https://api.paymongo.com/v1/payment_intents/${transactionId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const paymentData = await response.json();
+                    const realStatus = paymentData.data.attributes.status;
+                    
+                    console.log('Real payment status from PayMongo:', realStatus);
+                    
+                    // Update payment status data with real status
+                    paymentStatusData.status = realStatus;
+                    paymentStatusData.realStatus = realStatus;
+                    paymentStatusData.paymongoData = paymentData;
+                    
+                    // Only communicate success if payment actually succeeded
+                    if (realStatus === 'succeeded') {
+                        communicateWithApp();
+                    } else {
+                        console.log('Payment not actually successful, status:', realStatus);
+                        // Redirect to failed page instead
+                        window.location.href = `payment-failed.html?${window.location.search}&error=Payment not completed&real_status=${realStatus}`;
+                    }
+                } else {
+                    console.error('Failed to fetch payment status from PayMongo');
+                    // If we can't verify, don't assume success
+                    window.location.href = `payment-failed.html?${window.location.search}&error=Unable to verify payment status`;
+                }
+            } catch (error) {
+                console.error('Error fetching payment status:', error);
+                // If we can't verify, don't assume success
+                window.location.href = `payment-failed.html?${window.location.search}&error=Unable to verify payment status`;
+            }
+        }
+        
         // Direct communication with Flutter app using custom URL scheme
         function communicateWithApp() {
             try {
@@ -309,8 +354,8 @@
             }
         }
         
-        // Communicate with app immediately
-        communicateWithApp();
+        // Fetch real payment status first, then communicate
+        fetchRealPaymentStatus();
         
         // Auto-close countdown
         let countdown = 5; // Reduced to 5 seconds for faster return to app
