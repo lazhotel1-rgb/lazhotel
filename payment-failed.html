@@ -342,6 +342,14 @@
         localStorage.setItem('payment_booking_id', bookingId);
         localStorage.setItem('payment_error', errorMessage);
         localStorage.setItem('payment_timestamp', new Date().toISOString());
+        
+        // Also store in sessionStorage for immediate detection
+        sessionStorage.setItem('payment_status', 'failed');
+        sessionStorage.setItem('payment_transaction_id', transactionId);
+        sessionStorage.setItem('payment_amount', amount);
+        sessionStorage.setItem('payment_booking_id', bookingId);
+        sessionStorage.setItem('payment_error', errorMessage);
+        sessionStorage.setItem('payment_timestamp', new Date().toISOString());
     </script>
 </body>
 </html>
