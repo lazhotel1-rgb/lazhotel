@@ -132,24 +132,6 @@
             color: #555;
         }
         
-        .close-button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-        }
-        
-        .close-button:hover {
-            background: #45a049;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
-        }
-        
         .footer {
             margin-top: 30px;
             color: #999;
@@ -178,7 +160,7 @@
         <h1>Payment Successful!</h1>
         
         <p class="subtitle">
-            Your payment has been processed successfully. Your booking is now confirmed!
+            Your payment has been processed successfully. Redirecting you back to the app...
         </p>
         
         <div class="status-badge">PAYMENT COMPLETED</div>
@@ -205,29 +187,26 @@
         <div class="instructions">
             <h3>What happens next?</h3>
             <ul>
-                <li>Your booking has been automatically created</li>
-                <li>You will receive a confirmation email shortly</li>
-                <li>Please keep this page open until you return to the app</li>
-                <li>Your booking details will be available in the app</li>
+                <li>You will be automatically redirected back to the app</li>
+                <li>Your booking will be created automatically</li>
+                <li>You will receive a confirmation in the app</li>
+                <li>Your booking details will be available immediately</li>
             </ul>
         </div>
         
-        <button class="close-button" onclick="closeWindow()">
-            Return to App
-        </button>
-        
         <div class="footer">
             <p>Thank you for choosing LAZ Hotel!</p>
-            <p>This window will automatically close in <span id="countdown">10</span> seconds</p>
+            <p>Redirecting in <span id="countdown">3</span> seconds...</p>
         </div>
     </div>
 
     <script>
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const transactionId = urlParams.get('transaction_id') || 'TXN' + Date.now();
+        const status = urlParams.get('status') || 'success';
         const amount = urlParams.get('amount') || '0.00';
         const bookingId = urlParams.get('booking_id') || 'BK' + Date.now();
+        const transactionId = 'TXN' + Date.now();
         
         // Update page content
         document.getElementById('transactionId').textContent = transactionId;
@@ -243,8 +222,8 @@
             minute: '2-digit'
         });
         
-        // Auto-close countdown
-        let countdown = 10;
+        // Auto-redirect countdown
+        let countdown = 3;
         const countdownElement = document.getElementById('countdown');
         
         const timer = setInterval(() => {
@@ -253,45 +232,30 @@
             
             if (countdown <= 0) {
                 clearInterval(timer);
-                closeWindow();
+                redirectToApp();
             }
         }, 1000);
         
-        function closeWindow() {
-            // Try to close the window
-            window.close();
+        function redirectToApp() {
+            // Try to redirect to the Flutter app
+            // For web, this will redirect to the payment result screen
+            const appUrl = `https://lazhotel.web.app/payment-result?status=${status}&amount=${amount}&booking_id=${bookingId}`;
             
-            // If window.close() doesn't work, try to navigate back
+            // Try to open the app URL
+            window.location.href = appUrl;
+            
+            // Fallback: try to close the window
             setTimeout(() => {
-                if (!window.closed) {
-                    window.history.back();
-                }
+                window.close();
             }, 1000);
         }
         
-        // Send success message to parent window if in iframe
-        if (window.parent !== window) {
-            window.parent.postMessage({
-                type: 'payment_success',
-                transactionId: transactionId,
-                amount: amount,
-                bookingId: bookingId
-            }, '*');
-        }
-        
-        // Store success status in localStorage for the app to check
+        // Store success status in localStorage for backup
         localStorage.setItem('payment_status', 'success');
         localStorage.setItem('payment_transaction_id', transactionId);
         localStorage.setItem('payment_amount', amount);
         localStorage.setItem('payment_booking_id', bookingId);
         localStorage.setItem('payment_timestamp', new Date().toISOString());
-        
-        // Also store in sessionStorage for immediate detection
-        sessionStorage.setItem('payment_status', 'success');
-        sessionStorage.setItem('payment_transaction_id', transactionId);
-        sessionStorage.setItem('payment_amount', amount);
-        sessionStorage.setItem('payment_booking_id', bookingId);
-        sessionStorage.setItem('payment_timestamp', new Date().toISOString());
     </script>
 </body>
 </html>
