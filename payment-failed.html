@@ -296,25 +296,35 @@
             minute: '2-digit'
         });
         
-        // Create payment status data for GitHub communication
+        // Create payment status data for direct app communication
         const paymentStatusData = {
             status: 'failed',
             transactionId: transactionId,
             amount: amount,
+            currency: currency,
             bookingId: bookingId,
             paymentId: paymentId,
+            guestName: guestName,
+            roomType: roomType,
+            description: description,
             error: errorMessage,
             timestamp: new Date().toISOString(),
             source: 'paymongo_redirect'
         };
         
-        // Store payment status in GitHub Pages for Flutter app to retrieve
-        async function updatePaymentStatus() {
+        // Direct communication with Flutter app using custom URL scheme
+        function communicateWithApp() {
             try {
-                // Store the data in localStorage
-                localStorage.setItem('payment_status', JSON.stringify(paymentStatusData));
+                // Create a custom URL with payment data
+                const paymentData = encodeURIComponent(JSON.stringify(paymentStatusData));
+                const customUrl = `lazhotel://payment-result?data=${paymentData}`;
                 
-                // Try to communicate with the Flutter app via postMessage
+                console.log('Attempting to communicate with app:', customUrl);
+                
+                // Try to open the custom URL scheme
+                window.location.href = customUrl;
+                
+                // Fallback: Try to communicate via postMessage
                 if (window.opener) {
                     window.opener.postMessage({
                         type: 'payment_failed',
@@ -330,14 +340,14 @@
                     }, '*');
                 }
                 
-                console.log('Payment failure data:', paymentStatusData);
+                console.log('Payment failure data sent:', paymentStatusData);
             } catch (error) {
-                console.error('Error updating payment status:', error);
+                console.error('Error communicating with app:', error);
             }
         }
         
-        // Update payment status immediately
-        updatePaymentStatus();
+        // Communicate with app immediately
+        communicateWithApp();
         
         // Auto-close countdown
         let countdown = 10; // Keep at 10 seconds for failed payments
