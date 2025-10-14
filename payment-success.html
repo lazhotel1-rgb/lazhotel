@@ -260,28 +260,34 @@
             minute: '2-digit'
         });
         
-        // Create payment status data for GitHub communication
+        // Create payment status data for direct app communication
         const paymentStatusData = {
             status: 'success',
             transactionId: transactionId,
             amount: amount,
+            currency: currency,
             bookingId: bookingId,
             paymentId: paymentId,
+            guestName: guestName,
+            roomType: roomType,
+            description: description,
             timestamp: new Date().toISOString(),
             source: 'paymongo_redirect'
         };
         
-        // Store payment status in GitHub Pages for Flutter app to retrieve
-        async function updatePaymentStatus() {
+        // Direct communication with Flutter app using custom URL scheme
+        function communicateWithApp() {
             try {
-                // Create a simple JSON file that the Flutter app can poll
-                const statusUrl = `https://lazhotel1-rgb.github.io/lazhotel/payment-status.json?booking_id=${bookingId}&payment_id=${paymentId}`;
+                // Create a custom URL with payment data
+                const paymentData = encodeURIComponent(JSON.stringify(paymentStatusData));
+                const customUrl = `lazhotel://payment-result?data=${paymentData}`;
                 
-                // Since we can't directly write to GitHub Pages, we'll use a different approach
-                // We'll store the data in localStorage and use a simple API endpoint
-                localStorage.setItem('payment_status', JSON.stringify(paymentStatusData));
+                console.log('Attempting to communicate with app:', customUrl);
                 
-                // Try to communicate with the Flutter app via postMessage
+                // Try to open the custom URL scheme
+                window.location.href = customUrl;
+                
+                // Fallback: Try to communicate via postMessage
                 if (window.opener) {
                     window.opener.postMessage({
                         type: 'payment_success',
@@ -297,14 +303,14 @@
                     }, '*');
                 }
                 
-                console.log('Payment success data:', paymentStatusData);
+                console.log('Payment success data sent:', paymentStatusData);
             } catch (error) {
-                console.error('Error updating payment status:', error);
+                console.error('Error communicating with app:', error);
             }
         }
         
-        // Update payment status immediately
-        updatePaymentStatus();
+        // Communicate with app immediately
+        communicateWithApp();
         
         // Auto-close countdown
         let countdown = 5; // Reduced to 5 seconds for faster return to app
