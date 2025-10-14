@@ -259,15 +259,32 @@
     <script>
         // Get URL parameters from PayMongo redirect
         const urlParams = new URLSearchParams(window.location.search);
-        const transactionId = urlParams.get('transaction_id') || urlParams.get('checkout_session_id') || 'TXN' + Date.now();
+        const paymentIntentId = urlParams.get('payment_intent_id') || 'PI' + Date.now();
+        const transactionId = paymentIntentId; // Use Payment Intent ID as transaction ID
         const amount = urlParams.get('amount') || '0.00';
+        const currency = urlParams.get('currency') || 'PHP';
         const bookingId = urlParams.get('booking_id') || 'BK' + Date.now();
         const paymentId = urlParams.get('payment_id') || 'PAY' + Date.now();
+        const guestName = urlParams.get('guest_name') || 'Guest';
+        const roomType = urlParams.get('room_type') || 'Room';
+        const description = urlParams.get('description') || 'Hotel Booking';
         const errorMessage = urlParams.get('error') || urlParams.get('error_message') || 'Payment failed';
+        
+        console.log('Payment Failed - URL Parameters:', {
+            paymentIntentId,
+            amount,
+            currency,
+            bookingId,
+            paymentId,
+            guestName,
+            roomType,
+            description,
+            errorMessage
+        });
         
         // Update page content
         document.getElementById('transactionId').textContent = transactionId;
-        document.getElementById('amount').textContent = '₱' + parseFloat(amount).toLocaleString('en-US', {
+        document.getElementById('amount').textContent = currency + ' ' + parseFloat(amount).toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
