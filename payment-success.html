@@ -132,6 +132,24 @@
             color: #555;
         }
         
+        .close-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .close-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+        
         .footer {
             margin-top: 30px;
             color: #999;
@@ -160,7 +178,7 @@
         <h1>Payment Successful!</h1>
         
         <p class="subtitle">
-            Your payment has been processed successfully. Redirecting you back to the app...
+            Your payment has been processed successfully. Your booking is now confirmed!
         </p>
         
         <div class="status-badge">PAYMENT COMPLETED</div>
@@ -187,26 +205,30 @@
         <div class="instructions">
             <h3>What happens next?</h3>
             <ul>
-                <li>You will be automatically redirected back to the app</li>
-                <li>Your booking will be created automatically</li>
-                <li>You will receive a confirmation in the app</li>
-                <li>Your booking details will be available immediately</li>
+                <li>Your booking has been automatically created</li>
+                <li>You will receive a confirmation email shortly</li>
+                <li>Please keep this page open until you return to the app</li>
+                <li>Your booking details will be available in the app</li>
             </ul>
         </div>
         
+        <button class="close-button" onclick="closeWindow()">
+            Return to App
+        </button>
+        
         <div class="footer">
             <p>Thank you for choosing LAZ Hotel!</p>
-            <p>Redirecting in <span id="countdown">3</span> seconds...</p>
+            <p>This window will automatically close in <span id="countdown">5</span> seconds</p>
         </div>
     </div>
 
     <script>
-        // Get URL parameters
+        // Get URL parameters from PayMongo redirect
         const urlParams = new URLSearchParams(window.location.search);
-        const status = urlParams.get('status') || 'success';
+        const transactionId = urlParams.get('transaction_id') || urlParams.get('checkout_session_id') || 'TXN' + Date.now();
         const amount = urlParams.get('amount') || '0.00';
         const bookingId = urlParams.get('booking_id') || 'BK' + Date.now();
-        const transactionId = 'TXN' + Date.now();
+        const paymentId = urlParams.get('payment_id') || 'PAY' + Date.now();
         
         // Update page content
         document.getElementById('transactionId').textContent = transactionId;
@@ -222,8 +244,54 @@
             minute: '2-digit'
         });
         
-        // Auto-redirect countdown
-        let countdown = 3;
+        // Create payment status data for GitHub communication
+        const paymentStatusData = {
+            status: 'success',
+            transactionId: transactionId,
+            amount: amount,
+            bookingId: bookingId,
+            paymentId: paymentId,
+            timestamp: new Date().toISOString(),
+            source: 'paymongo_redirect'
+        };
+        
+        // Store payment status in GitHub Pages for Flutter app to retrieve
+        async function updatePaymentStatus() {
+            try {
+                // Create a simple JSON file that the Flutter app can poll
+                const statusUrl = `https://lazhotel1-rgb.github.io/lazhotel/payment-status.json?booking_id=${bookingId}&payment_id=${paymentId}`;
+                
+                // Since we can't directly write to GitHub Pages, we'll use a different approach
+                // We'll store the data in localStorage and use a simple API endpoint
+                localStorage.setItem('payment_status', JSON.stringify(paymentStatusData));
+                
+                // Try to communicate with the Flutter app via postMessage
+                if (window.opener) {
+                    window.opener.postMessage({
+                        type: 'payment_success',
+                        data: paymentStatusData
+                    }, '*');
+                }
+                
+                // Also try to communicate with parent window
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'payment_success',
+                        data: paymentStatusData
+                    }, '*');
+                }
+                
+                console.log('Payment success data:', paymentStatusData);
+            } catch (error) {
+                console.error('Error updating payment status:', error);
+            }
+        }
+        
+        // Update payment status immediately
+        updatePaymentStatus();
+        
+        // Auto-close countdown
+        let countdown = 5; // Reduced to 5 seconds for faster return to app
         const countdownElement = document.getElementById('countdown');
         
         const timer = setInterval(() => {
@@ -232,25 +300,43 @@
             
             if (countdown <= 0) {
                 clearInterval(timer);
-                redirectToApp();
+                closeWindow();
             }
         }, 1000);
         
-        function redirectToApp() {
-            // Try to redirect to the Flutter app
-            // For web, this will redirect to the payment result screen
-            const appUrl = `https://lazhotel.web.app/payment-result?status=${status}&amount=${amount}&booking_id=${bookingId}`;
+        function closeWindow() {
+            // Try to close the window
+            window.close();
             
-            // Try to open the app URL
-            window.location.href = appUrl;
-            
-            // Fallback: try to close the window
+            // If window.close() doesn't work, try to navigate back
             setTimeout(() => {
-                window.close();
+                if (!window.closed) {
+                    window.history.back();
+                }
             }, 1000);
         }
         
-        // Store success status in localStorage for backup
+        // Send success message to parent window if in iframe or WebView
+        if (window.parent !== window) {
+            window.parent.postMessage({
+                type: 'payment_success',
+                transactionId: transactionId,
+                amount: amount,
+                bookingId: bookingId
+            }, '*');
+        }
+        
+        // Send message to Flutter WebView if available
+        if (window.flutter_inappwebview) {
+            window.flutter_inappwebview.callHandler('PaymentChannel', JSON.stringify({
+                type: 'payment_success',
+                transactionId: transactionId,
+                amount: amount,
+                bookingId: bookingId
+            }));
+        }
+        
+        // Store success status in localStorage for the app to check
         localStorage.setItem('payment_status', 'success');
         localStorage.setItem('payment_transaction_id', transactionId);
         localStorage.setItem('payment_amount', amount);
