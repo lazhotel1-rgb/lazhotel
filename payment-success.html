@@ -320,32 +320,38 @@
             }
         }
         
-        // Direct communication with Flutter app using custom URL scheme
+        // Communication with Flutter WebView
         function communicateWithApp() {
             try {
-                // Create a custom URL with payment data
-                const paymentData = encodeURIComponent(JSON.stringify(paymentStatusData));
-                const customUrl = `lazhotel://payment-result?data=${paymentData}`;
+                console.log('Communicating payment success to Flutter WebView');
                 
-                console.log('Attempting to communicate with app:', customUrl);
-                
-                // Try to open the custom URL scheme
-                window.location.href = customUrl;
-                
-                // Fallback: Try to communicate via postMessage
-                if (window.opener) {
-                    window.opener.postMessage({
-                        type: 'payment_success',
+                // Check if we're in a WebView (Flutter InAppWebView)
+                if (window.flutter_inappwebview) {
+                    console.log('Detected Flutter InAppWebView');
+                    
+                    // Use Flutter InAppWebView's callHandler to communicate with Flutter
+                    window.flutter_inappwebview.callHandler('paymentResult', {
+                        status: 'success',
                         data: paymentStatusData
-                    }, '*');
-                }
-                
-                // Also try to communicate with parent window
-                if (window.parent !== window) {
-                    window.parent.postMessage({
-                        type: 'payment_success',
-                        data: paymentStatusData
-                    }, '*');
+                    });
+                } else {
+                    console.log('Not in Flutter WebView, using fallback methods');
+                    
+                    // Fallback: Try to communicate via postMessage
+                    if (window.opener) {
+                        window.opener.postMessage({
+                            type: 'payment_success',
+                            data: paymentStatusData
+                        }, '*');
+                    }
+                    
+                    // Also try to communicate with parent window
+                    if (window.parent !== window) {
+                        window.parent.postMessage({
+                            type: 'payment_success',
+                            data: paymentStatusData
+                        }, '*');
+                    }
                 }
                 
                 console.log('Payment success data sent:', paymentStatusData);
