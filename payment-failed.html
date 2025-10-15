@@ -13,22 +13,26 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            background: transparent;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            opacity: 0;
+            visibility: hidden;
         }
         
         .container {
-            background: white;
+            background: transparent;
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            padding: 40px;
+            box-shadow: none;
+            padding: 0;
             text-align: center;
             max-width: 500px;
             width: 100%;
+            opacity: 0;
+            visibility: hidden;
         }
         
         .error-icon {
@@ -332,35 +336,64 @@
             }
         }
         
-        // Direct communication with Flutter app using deep link
+        // Universal communication with Flutter app (mobile + web)
         function communicateWithApp() {
             try {
-                // Create a deep link URL with payment data
+                console.log('Attempting to communicate with app:', paymentStatusData);
+                
+                // Method 1: Deep link for mobile apps
                 const paymentData = encodeURIComponent(JSON.stringify(paymentStatusData));
                 const deepLinkUrl = `lazhotel://payment-result?data=${paymentData}`;
                 
-                console.log('Attempting to communicate with app via deep link:', deepLinkUrl);
+                // Try deep link first (works on mobile)
+                try {
+                    window.location.href = deepLinkUrl;
+                    console.log('Deep link attempted:', deepLinkUrl);
+                } catch (e) {
+                    console.log('Deep link failed (likely web browser):', e);
+                }
                 
-                // Try to open the deep link
-                window.location.href = deepLinkUrl;
-                
-                // Fallback: Try to communicate via postMessage
+                // Method 2: PostMessage for web apps
                 if (window.opener) {
                     window.opener.postMessage({
                         type: 'payment_failed',
                         data: paymentStatusData
                     }, '*');
+                    console.log('PostMessage sent to opener window');
                 }
                 
-                // Also try to communicate with parent window
+                // Method 3: PostMessage to parent window
                 if (window.parent !== window) {
                     window.parent.postMessage({
                         type: 'payment_failed',
                         data: paymentStatusData
                     }, '*');
+                    console.log('PostMessage sent to parent window');
                 }
                 
-                console.log('Payment failure data sent via deep link:', paymentStatusData);
+                // Method 4: LocalStorage for web apps (fallback)
+                try {
+                    localStorage.setItem('payment_result', JSON.stringify({
+                        type: 'payment_failed',
+                        data: paymentStatusData,
+                        timestamp: Date.now()
+                    }));
+                    console.log('Payment data stored in localStorage');
+                } catch (e) {
+                    console.log('localStorage not available:', e);
+                }
+                
+                // Method 5: Redirect to app URL with parameters (web fallback)
+                try {
+                    const appUrl = `https://your-app-domain.web.app/payment-result?status=failed&data=${paymentData}`;
+                    console.log('Would redirect to app URL:', appUrl);
+                    // Uncomment the line below if you want to redirect to your web app
+                    // window.location.href = appUrl;
+                } catch (e) {
+                    console.log('App URL redirect failed:', e);
+                }
+                
+                console.log('All communication methods attempted');
             } catch (error) {
                 console.error('Error communicating with app:', error);
             }
@@ -369,13 +402,15 @@
         // Process payment failure immediately
         processPaymentFailure();
         
-        // Auto-close countdown
-        let countdown = 10; // Keep at 10 seconds for failed payments
+        // Auto-close countdown - immediate for seamless experience
+        let countdown = 1; // Reduced to 1 second for invisible experience
         const countdownElement = document.getElementById('countdown');
         
         const timer = setInterval(() => {
             countdown--;
-            countdownElement.textContent = countdown;
+            if (countdownElement) {
+                countdownElement.textContent = countdown;
+            }
             
             if (countdown <= 0) {
                 clearInterval(timer);
