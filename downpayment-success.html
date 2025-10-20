@@ -214,10 +214,10 @@
             <h3>Important Information:</h3>
             <ul>
                 <li>Your booking has been reserved with downpayment</li>
-                <li>You must pay the remaining balance at hotel check-in</li>
-                <li>Your booking will only be fully confirmed after full payment</li>
-                <li>Please bring valid ID and payment method for check-in</li>
-                <li>You will receive a confirmation email shortly</li>
+                <li>You must complete full payment at hotel reception</li>
+                <li>Please arrive at the hotel on your check-in date</li>
+                <li>Bring valid ID and payment method for remaining balance</li>
+                <li>Your booking will be confirmed only after full payment</li>
             </ul>
         </div>
         
@@ -227,7 +227,7 @@
         
         <div class="footer">
             <p>Thank you for choosing LAZ Hotel!</p>
-            <p>This window will automatically close in <span id="countdown">5</span> seconds</p>
+            <p>This window will automatically close in <span id="countdown">3</span> seconds</p>
         </div>
     </div>
 
@@ -236,25 +236,27 @@
         const urlParams = new URLSearchParams(window.location.search);
         const paymentIntentId = urlParams.get('payment_intent_id') || 'PI' + Date.now();
         const transactionId = paymentIntentId;
-        const downpaymentAmount = urlParams.get('amount') || '0.00';
-        const totalAmount = urlParams.get('total_amount') || '0.00';
+        const amount = urlParams.get('amount') || '0.00';
         const currency = urlParams.get('currency') || 'PHP';
         const bookingId = urlParams.get('booking_id') || 'BK' + Date.now();
         const paymentId = urlParams.get('payment_id') || 'PAY' + Date.now();
         const guestName = urlParams.get('guest_name') || 'Guest';
         const roomType = urlParams.get('room_type') || 'Room';
         const description = urlParams.get('description') || 'Hotel Downpayment';
+        const totalAmount = urlParams.get('total_amount') || '0.00';
+        const downpaymentAmount = urlParams.get('downpayment_amount') || amount;
         
         console.log('Downpayment Success - URL Parameters:', {
             paymentIntentId,
-            downpaymentAmount,
-            totalAmount,
+            amount,
             currency,
             bookingId,
             paymentId,
             guestName,
             roomType,
-            description
+            description,
+            totalAmount,
+            downpaymentAmount
         });
         
         // Calculate remaining balance
@@ -278,12 +280,12 @@
             minute: '2-digit'
         });
         
-        // Create downpayment status data for direct app communication
-        const downpaymentStatusData = {
+        // Create payment status data for direct app communication
+        const paymentStatusData = {
             status: 'success',
-            type: 'downpayment',
+            paymentType: 'downpayment',
             transactionId: transactionId,
-            downpaymentAmount: downpaymentAmount,
+            amount: downpaymentAmount,
             totalAmount: totalAmount,
             remainingBalance: remainingBalance.toString(),
             currency: currency,
@@ -293,7 +295,7 @@
             roomType: roomType,
             description: description,
             timestamp: new Date().toISOString(),
-            source: 'paymongo_redirect'
+            source: 'paymongo_downpayment_redirect'
         };
         
         // Process downpayment success
@@ -301,11 +303,11 @@
             try {
                 console.log('Processing downpayment success - PayMongo redirected to success page');
                 
-                downpaymentStatusData.status = 'succeeded';
-                downpaymentStatusData.realStatus = 'succeeded';
-                downpaymentStatusData.source = 'paymongo_downpayment_success_redirect';
+                paymentStatusData.status = 'succeeded';
+                paymentStatusData.realStatus = 'succeeded';
+                paymentStatusData.source = 'paymongo_downpayment_success_redirect';
                 
-                console.log('Downpayment success data:', downpaymentStatusData);
+                console.log('Downpayment success data:', paymentStatusData);
                 
                 // Communicate success to app
                 communicateWithApp();
@@ -317,11 +319,11 @@
         // Universal communication with Flutter app (mobile + web)
         function communicateWithApp() {
             try {
-                console.log('Attempting to communicate with app:', downpaymentStatusData);
+                console.log('Attempting to communicate with app:', paymentStatusData);
                 
                 // Method 1: Deep link for mobile apps
-                const paymentData = encodeURIComponent(JSON.stringify(downpaymentStatusData));
-                const deepLinkUrl = `lazhotel://downpayment-result?data=${paymentData}`;
+                const paymentData = encodeURIComponent(JSON.stringify(paymentStatusData));
+                const deepLinkUrl = `lazhotel://payment-result?data=${paymentData}`;
                 
                 // Try deep link first (works on mobile)
                 try {
@@ -335,7 +337,7 @@
                 if (window.opener) {
                     window.opener.postMessage({
                         type: 'downpayment_success',
-                        data: downpaymentStatusData
+                        data: paymentStatusData
                     }, '*');
                     console.log('PostMessage sent to opener window');
                 }
@@ -344,16 +346,16 @@
                 if (window.parent !== window) {
                     window.parent.postMessage({
                         type: 'downpayment_success',
-                        data: downpaymentStatusData
+                        data: paymentStatusData
                     }, '*');
                     console.log('PostMessage sent to parent window');
                 }
                 
                 // Method 4: LocalStorage for web apps (fallback)
                 try {
-                    localStorage.setItem('downpayment_result', JSON.stringify({
+                    localStorage.setItem('payment_result', JSON.stringify({
                         type: 'downpayment_success',
-                        data: downpaymentStatusData,
+                        data: paymentStatusData,
                         timestamp: Date.now()
                     }));
                     console.log('Downpayment data stored in localStorage');
@@ -371,7 +373,7 @@
         processDownpaymentSuccess();
         
         // Auto-close countdown
-        let countdown = 5;
+        let countdown = 3;
         const countdownElement = document.getElementById('countdown');
         
         const timer = setInterval(() => {
@@ -403,30 +405,33 @@
             window.parent.postMessage({
                 type: 'downpayment_success',
                 transactionId: transactionId,
-                downpaymentAmount: downpaymentAmount,
+                amount: downpaymentAmount,
                 totalAmount: totalAmount,
+                remainingBalance: remainingBalance,
                 bookingId: bookingId
             }, '*');
         }
         
         // Send message to Flutter WebView if available
         if (window.flutter_inappwebview) {
-            window.flutter_inappwebview.callHandler('DownpaymentChannel', JSON.stringify({
+            window.flutter_inappwebview.callHandler('PaymentChannel', JSON.stringify({
                 type: 'downpayment_success',
                 transactionId: transactionId,
-                downpaymentAmount: downpaymentAmount,
+                amount: downpaymentAmount,
                 totalAmount: totalAmount,
+                remainingBalance: remainingBalance,
                 bookingId: bookingId
             }));
         }
         
         // Store success status in localStorage for the app to check
-        localStorage.setItem('downpayment_status', 'success');
-        localStorage.setItem('downpayment_transaction_id', transactionId);
-        localStorage.setItem('downpayment_amount', downpaymentAmount);
-        localStorage.setItem('downpayment_total_amount', totalAmount);
-        localStorage.setItem('downpayment_booking_id', bookingId);
-        localStorage.setItem('downpayment_timestamp', new Date().toISOString());
+        localStorage.setItem('payment_status', 'downpayment_success');
+        localStorage.setItem('payment_transaction_id', transactionId);
+        localStorage.setItem('payment_amount', downpaymentAmount);
+        localStorage.setItem('payment_total_amount', totalAmount);
+        localStorage.setItem('payment_remaining_balance', remainingBalance.toString());
+        localStorage.setItem('payment_booking_id', bookingId);
+        localStorage.setItem('payment_timestamp', new Date().toISOString());
     </script>
 </body>
 </html>
