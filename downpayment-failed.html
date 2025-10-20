@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Downpayment Failed - LAZ Hotel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: transparent;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .container {
+            background: transparent;
+            border-radius: 20px;
+            box-shadow: none;
+            padding: 0;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .error-icon {
+            width: 100px;
+            height: 100px;
+            background: #e74c3c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .error-icon::before {
+            content: '✕';
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        h1 {
+            color: #e74c3c;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        
+        .details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: left;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+        }
+        
+        .detail-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .detail-value {
+            color: #666;
+        }
+        
+        .status-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        
+        .error-info {
+            background: #fdf2f2;
+            border-left: 4px solid #e74c3c;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: left;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .error-info h3 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+        
+        .error-info ul {
+            margin-left: 20px;
+        }
+        
+        .error-info li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .retry-button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .retry-button:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+        
+        .close-button {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .close-button:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(149, 165, 166, 0.3);
+        }
+        
+        .footer {
+            margin-top: 30px;
+            color: #999;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-icon"></div>
+        
+        <h1>Downpayment Failed</h1>
+        
+        <p class="subtitle">
+            Unfortunately, your downpayment could not be processed. No charges have been made to your account.
+        </p>
+        
+        <div class="status-badge">DOWNPAYMENT FAILED</div>
+        
+        <div class="details">
+            <div class="detail-row">
+                <span class="detail-label">Transaction ID:</span>
+                <span class="detail-value" id="transactionId">Loading...</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Downpayment Amount:</span>
+                <span class="detail-value" id="amount">Loading...</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Total Amount:</span>
+                <span class="detail-value" id="totalAmount">Loading...</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Payment Method:</span>
+                <span class="detail-value">PayMongo</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date:</span>
+                <span class="detail-value" id="date">Loading...</span>
+            </div>
+        </div>
+        
+        <div class="error-info">
+            <h3>Possible reasons for failure:</h3>
+            <ul>
+                <li>Insufficient funds in your account</li>
+                <li>Incorrect card details entered</li>
+                <li>Card expired or blocked by your bank</li>
+                <li>Network connection issues</li>
+                <li>Payment gateway temporarily unavailable</li>
+            </ul>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="retry-button" onclick="retryDownpayment()">
+                Try Again
+            </button>
+            <button class="close-button" onclick="closeWindow()">
+                Return to App
+            </button>
+        </div>
+        
+        <div class="footer">
+            <p>Need help? Contact our support team.</p>
+            <p>This window will automatically close in <span id="countdown">10</span> seconds</p>
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameters from PayMongo redirect
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentIntentId = urlParams.get('payment_intent_id') || 'PI' + Date.now();
+        const transactionId = paymentIntentId;
+        const downpaymentAmount = urlParams.get('amount') || '0.00';
+        const totalAmount = urlParams.get('total_amount') || '0.00';
+        const currency = urlParams.get('currency') || 'PHP';
+        const bookingId = urlParams.get('booking_id') || 'BK' + Date.now();
+        const paymentId = urlParams.get('payment_id') || 'PAY' + Date.now();
+        const guestName = urlParams.get('guest_name') || 'Guest';
+        const roomType = urlParams.get('room_type') || 'Room';
+        const description = urlParams.get('description') || 'Hotel Downpayment';
+        const errorMessage = urlParams.get('error') || urlParams.get('error_message') || 'Downpayment failed';
+        
+        console.log('Downpayment Failed - URL Parameters:', {
+            paymentIntentId,
+            downpaymentAmount,
+            totalAmount,
+            currency,
+            bookingId,
+            paymentId,
+            guestName,
+            roomType,
+            description,
+            errorMessage
+        });
+        
+        // Update page content
+        document.getElementById('transactionId').textContent = transactionId;
+        document.getElementById('amount').textContent = currency + ' ' + parseFloat(downpaymentAmount).toLocaleString('en-US', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        });
+        document.getElementById('totalAmount').textContent = currency + ' ' + parseFloat(totalAmount).toLocaleString('en-US', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        });
+        document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        // Create downpayment status data for direct app communication
+        const downpaymentStatusData = {
+            status: 'failed',
+            type: 'downpayment',
+            transactionId: transactionId,
+            downpaymentAmount: downpaymentAmount,
+            totalAmount: totalAmount,
+            currency: currency,
+            bookingId: bookingId,
+            paymentId: paymentId,
+            guestName: guestName,
+            roomType: roomType,
+            description: description,
+            error: errorMessage,
+            timestamp: new Date().toISOString(),
+            source: 'paymongo_redirect'
+        };
+        
+        // Process downpayment failure
+        function processDownpaymentFailure() {
+            try {
+                console.log('Processing downpayment failure - PayMongo redirected to failed page');
+                
+                downpaymentStatusData.status = 'failed';
+                downpaymentStatusData.realStatus = 'failed';
+                downpaymentStatusData.source = 'paymongo_downpayment_failed_redirect';
+                
+                console.log('Downpayment failure data:', downpaymentStatusData);
+                
+                // Communicate failure to app
+                communicateWithApp();
+            } catch (error) {
+                console.error('Error processing downpayment failure:', error);
+            }
+        }
+        
+        // Universal communication with Flutter app (mobile + web)
+        function communicateWithApp() {
+            try {
+                console.log('Attempting to communicate with app:', downpaymentStatusData);
+                
+                // Method 1: Deep link for mobile apps
+                const paymentData = encodeURIComponent(JSON.stringify(downpaymentStatusData));
+                const deepLinkUrl = `lazhotel://downpayment-result?data=${paymentData}`;
+                
+                // Try deep link first (works on mobile)
+                try {
+                    window.location.href = deepLinkUrl;
+                    console.log('Deep link attempted:', deepLinkUrl);
+                } catch (e) {
+                    console.log('Deep link failed (likely web browser):', e);
+                }
+                
+                // Method 2: PostMessage for web apps
+                if (window.opener) {
+                    window.opener.postMessage({
+                        type: 'downpayment_failed',
+                        data: downpaymentStatusData
+                    }, '*');
+                    console.log('PostMessage sent to opener window');
+                }
+                
+                // Method 3: PostMessage to parent window
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'downpayment_failed',
+                        data: downpaymentStatusData
+                    }, '*');
+                    console.log('PostMessage sent to parent window');
+                }
+                
+                // Method 4: LocalStorage for web apps (fallback)
+                try {
+                    localStorage.setItem('downpayment_result', JSON.stringify({
+                        type: 'downpayment_failed',
+                        data: downpaymentStatusData,
+                        timestamp: Date.now()
+                    }));
+                    console.log('Downpayment data stored in localStorage');
+                } catch (e) {
+                    console.log('localStorage not available:', e);
+                }
+                
+                console.log('All communication methods attempted');
+            } catch (error) {
+                console.error('Error communicating with app:', error);
+            }
+        }
+        
+        // Process downpayment failure immediately
+        processDownpaymentFailure();
+        
+        // Auto-close countdown
+        let countdown = 10;
+        const countdownElement = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            countdown--;
+            if (countdownElement) {
+                countdownElement.textContent = countdown;
+            }
+            
+            if (countdown <= 0) {
+                clearInterval(timer);
+                closeWindow();
+            }
+        }, 1000);
+        
+        function closeWindow() {
+            // Try to close the window
+            window.close();
+            
+            // If window.close() doesn't work, try to navigate back
+            setTimeout(() => {
+                if (!window.closed) {
+                    window.history.back();
+                }
+            }, 1000);
+        }
+        
+        function retryDownpayment() {
+            // Send retry message to parent window if in iframe
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'downpayment_retry',
+                    transactionId: transactionId,
+                    downpaymentAmount: downpaymentAmount,
+                    totalAmount: totalAmount,
+                    bookingId: bookingId
+                }, '*');
+            }
+            
+            // Store retry request in localStorage
+            localStorage.setItem('downpayment_retry', 'true');
+            localStorage.setItem('downpayment_transaction_id', transactionId);
+            localStorage.setItem('downpayment_amount', downpaymentAmount);
+            localStorage.setItem('downpayment_total_amount', totalAmount);
+            localStorage.setItem('downpayment_booking_id', bookingId);
+            
+            closeWindow();
+        }
+        
+        // Send failure message to parent window if in iframe or WebView
+        if (window.parent !== window) {
+            window.parent.postMessage({
+                type: 'downpayment_failed',
+                transactionId: transactionId,
+                downpaymentAmount: downpaymentAmount,
+                totalAmount: totalAmount,
+                bookingId: bookingId,
+                error: errorMessage
+            }, '*');
+        }
+        
+        // Send message to Flutter WebView if available
+        if (window.flutter_inappwebview) {
+            window.flutter_inappwebview.callHandler('DownpaymentChannel', JSON.stringify({
+                type: 'downpayment_failed',
+                transactionId: transactionId,
+                downpaymentAmount: downpaymentAmount,
+                totalAmount: totalAmount,
+                bookingId: bookingId,
+                error: errorMessage
+            }));
+        }
+        
+        // Store failure status in localStorage for the app to check
+        localStorage.setItem('downpayment_status', 'failed');
+        localStorage.setItem('downpayment_transaction_id', transactionId);
+        localStorage.setItem('downpayment_amount', downpaymentAmount);
+        localStorage.setItem('downpayment_total_amount', totalAmount);
+        localStorage.setItem('downpayment_booking_id', bookingId);
+        localStorage.setItem('downpayment_error', errorMessage);
+        localStorage.setItem('downpayment_timestamp', new Date().toISOString());
+    </script>
+</body>
+</html>
