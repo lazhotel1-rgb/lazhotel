@@ -3,232 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Downpayment Success - LAZ Hotel</title>
+    <title>Processing Downpayment - LAZ Hotel</title>
     <style>
-        * {
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: transparent;
+            background: #f5f5f5;
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            opacity: 0;
-            visibility: hidden;
         }
         
-        .container {
-            background: transparent;
-            border-radius: 20px;
-            box-shadow: none;
-            padding: 0;
+        .processing-container {
             text-align: center;
-            max-width: 500px;
-            width: 100%;
-            opacity: 0;
-            visibility: hidden;
-        }
-        
-        .success-icon {
-            width: 100px;
-            height: 100px;
-            background: #FF9800;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 30px;
-            animation: pulse 2s infinite;
-        }
-        
-        .success-icon::before {
-            content: '✓';
-            color: white;
-            font-size: 50px;
-            font-weight: bold;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        h1 {
-            color: #FF9800;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            font-weight: 300;
-        }
-        
-        .subtitle {
-            color: #666;
-            font-size: 1.2em;
-            margin-bottom: 30px;
-            line-height: 1.5;
-        }
-        
-        .details {
-            background: #f8f9fa;
+            padding: 40px;
+            background: white;
             border-radius: 10px;
-            padding: 20px;
-            margin: 30px 0;
-            text-align: left;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 90%;
         }
         
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 5px 0;
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #FF9800;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
         }
         
-        .detail-row:last-child {
-            margin-bottom: 0;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
-        .detail-label {
-            font-weight: 600;
+        .processing-text {
             color: #333;
-        }
-        
-        .detail-value {
-            color: #666;
-        }
-        
-        .status-badge {
-            background: #FF9800;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 600;
-            display: inline-block;
-            margin: 20px 0;
-        }
-        
-        .instructions {
-            background: #fff3e0;
-            border-left: 4px solid #FF9800;
-            padding: 20px;
-            margin: 30px 0;
-            text-align: left;
-            border-radius: 0 10px 10px 0;
-        }
-        
-        .instructions h3 {
-            color: #FF9800;
+            font-size: 18px;
             margin-bottom: 10px;
         }
         
-        .instructions ul {
-            margin-left: 20px;
-        }
-        
-        .instructions li {
-            margin-bottom: 8px;
-            color: #555;
-        }
-        
-        .close-button {
-            background: #FF9800;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-        }
-        
-        .close-button:hover {
-            background: #F57C00;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
-        }
-        
-        .footer {
-            margin-top: 30px;
-            color: #999;
-            font-size: 0.9em;
-        }
-        
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-            
-            h1 {
-                font-size: 2em;
-            }
-            
-            .subtitle {
-                font-size: 1em;
-            }
+        .sub-text {
+            color: #666;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="success-icon"></div>
-        
-        <h1>Downpayment Successful!</h1>
-        
-        <p class="subtitle">
-            Your downpayment has been processed successfully. Your booking is now reserved!
-        </p>
-        
-        <div class="status-badge">DOWNPAYMENT COMPLETED</div>
-        
-        <div class="details">
-            <div class="detail-row">
-                <span class="detail-label">Transaction ID:</span>
-                <span class="detail-value" id="transactionId">Loading...</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Downpayment Amount:</span>
-                <span class="detail-value" id="amount">Loading...</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Remaining Balance:</span>
-                <span class="detail-value" id="remainingBalance">Loading...</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Payment Method:</span>
-                <span class="detail-value">PayMongo</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Date:</span>
-                <span class="detail-value" id="date">Loading...</span>
-            </div>
-        </div>
-        
-        <div class="instructions">
-            <h3>Important Information:</h3>
-            <ul>
-                <li>Your booking has been reserved with downpayment</li>
-                <li>You must complete full payment at hotel reception</li>
-                <li>Please arrive at the hotel on your check-in date</li>
-                <li>Bring valid ID and payment method for remaining balance</li>
-                <li>Your booking will be confirmed only after full payment</li>
-            </ul>
-        </div>
-        
-        <button class="close-button" onclick="closeWindow()">
-            Return to App
-        </button>
-        
-        <div class="footer">
-            <p>Thank you for choosing LAZ Hotel!</p>
-            <p>This window will automatically close in <span id="countdown">3</span> seconds</p>
-        </div>
+    <div class="processing-container">
+        <div class="spinner"></div>
+        <div class="processing-text">Processing Downpayment...</div>
+        <div class="sub-text">Please wait while we confirm your payment</div>
     </div>
 
     <script>
@@ -262,27 +91,9 @@
         // Calculate remaining balance
         const remainingBalance = parseFloat(totalAmount) - parseFloat(downpaymentAmount);
         
-        // Update page content
-        document.getElementById('transactionId').textContent = transactionId;
-        document.getElementById('amount').textContent = currency + ' ' + parseFloat(downpaymentAmount).toLocaleString('en-US', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        });
-        document.getElementById('remainingBalance').textContent = currency + ' ' + remainingBalance.toLocaleString('en-US', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        });
-        document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        
         // Create payment status data for direct app communication
         const paymentStatusData = {
-            status: 'success',
+            status: 'succeeded',
             paymentType: 'downpayment',
             transactionId: transactionId,
             amount: downpaymentAmount,
@@ -295,18 +106,13 @@
             roomType: roomType,
             description: description,
             timestamp: new Date().toISOString(),
-            source: 'paymongo_downpayment_redirect'
+            source: 'paymongo_downpayment_success_redirect'
         };
         
-        // Process downpayment success
+        // Process downpayment success immediately
         function processDownpaymentSuccess() {
             try {
                 console.log('Processing downpayment success - PayMongo redirected to success page');
-                
-                paymentStatusData.status = 'succeeded';
-                paymentStatusData.realStatus = 'succeeded';
-                paymentStatusData.source = 'paymongo_downpayment_success_redirect';
-                
                 console.log('Downpayment success data:', paymentStatusData);
                 
                 // Communicate success to app
@@ -372,66 +178,10 @@
         // Process downpayment success immediately
         processDownpaymentSuccess();
         
-        // Auto-close countdown
-        let countdown = 3;
-        const countdownElement = document.getElementById('countdown');
-        
-        const timer = setInterval(() => {
-            countdown--;
-            if (countdownElement) {
-                countdownElement.textContent = countdown;
-            }
-            
-            if (countdown <= 0) {
-                clearInterval(timer);
-                closeWindow();
-            }
-        }, 1000);
-        
-        function closeWindow() {
-            // Try to close the window
+        // Auto-close after 2 seconds
+        setTimeout(() => {
             window.close();
-            
-            // If window.close() doesn't work, try to navigate back
-            setTimeout(() => {
-                if (!window.closed) {
-                    window.history.back();
-                }
-            }, 1000);
-        }
-        
-        // Send success message to parent window if in iframe or WebView
-        if (window.parent !== window) {
-            window.parent.postMessage({
-                type: 'downpayment_success',
-                transactionId: transactionId,
-                amount: downpaymentAmount,
-                totalAmount: totalAmount,
-                remainingBalance: remainingBalance,
-                bookingId: bookingId
-            }, '*');
-        }
-        
-        // Send message to Flutter WebView if available
-        if (window.flutter_inappwebview) {
-            window.flutter_inappwebview.callHandler('PaymentChannel', JSON.stringify({
-                type: 'downpayment_success',
-                transactionId: transactionId,
-                amount: downpaymentAmount,
-                totalAmount: totalAmount,
-                remainingBalance: remainingBalance,
-                bookingId: bookingId
-            }));
-        }
-        
-        // Store success status in localStorage for the app to check
-        localStorage.setItem('payment_status', 'downpayment_success');
-        localStorage.setItem('payment_transaction_id', transactionId);
-        localStorage.setItem('payment_amount', downpaymentAmount);
-        localStorage.setItem('payment_total_amount', totalAmount);
-        localStorage.setItem('payment_remaining_balance', remainingBalance.toString());
-        localStorage.setItem('payment_booking_id', bookingId);
-        localStorage.setItem('payment_timestamp', new Date().toISOString());
+        }, 2000);
     </script>
 </body>
 </html>
